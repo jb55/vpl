@@ -50,11 +50,16 @@ int main()
 	double prevt = 0, cpuTime = 0;
 
   struct vpl_node node;
+  struct vpl_pin pin;
   vpl_node_init(&node);
+  vpl_pin_init(&pin);
   node.x = 200;
   node.y = 100;
   node.w = 500;
   node.h = 200;
+  struct vpl_pin pins[] = {pin, pin};
+  node.left_pins = pins;
+  node.left_pin_count = 2;
   struct vpl_node nodes[] = {node};
 
 	if (!glfwInit()) {

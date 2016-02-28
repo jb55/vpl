@@ -32,7 +32,6 @@ struct vpl_color {
 struct vpl_pin {
   float size;
   enum vpl_pin_graphic graphic;
-  enum vpl_side side;
   struct vpl_color border_color;
   struct vpl_color color;
 };
@@ -40,6 +39,7 @@ struct vpl_pin {
 struct vpl_node {
   float roundness;
   float padding;
+  float pin_padding;
   char* title;
   float x, y, w, h;
   struct vpl_color border_color;

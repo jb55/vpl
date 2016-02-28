@@ -5,6 +5,9 @@
 
 #include <nanovg/nanovg.h>
 
+static void
+vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node);
+
 void
 vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
 	NVGpaint shadowPaint;
@@ -20,7 +23,7 @@ vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
 
 	char *title = node->title;
 
-	nvgSave(vg);
+  nvgSave(vg);
 
 	// Window
 	nvgBeginPath(vg);
@@ -64,7 +67,9 @@ vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
 	nvgFillColor(vg, nvgRGBA(220,220,220,160));
 	nvgText(vg, x+w/2,y+16, title, NULL);
 
-	nvgRestore(vg);
+  nvgRestore(vg);
+
+  vpl_draw_pins(vpl, node);
 }
 
 
@@ -82,30 +87,43 @@ vpl_draw_ide(struct vpl_ctx *vpl, struct vpl_node *nodes, int len) {
 static void
 pin_get_positioning(struct vpl_node *node,
                     struct vpl_pin *pins,
-                    int npins, int pin_ind,
+                    enum vpl_side pin_side,
+                    int pin_count, int pin_ind,
                     float *px, float *py) {
+  int i = 0;
   float x = 0;
   float y = 0;
+  float ty = 0;
+  // TODO: pin alignment based off pin_count
 
-  /* switch (pin->side) { */
-  /* case vpl_side_left: { */
-  /*   x = node->x + node->padding; */
-  /*   x = node->x + node->padding; */
-  /*   break; */
-  /* } */
-  /* case vpl_side_right: { */
-  /*   x = */
-  /*   break; */
-  /* } */
-  /* case vpl_side_bottom: { */
-  /*   break; */
-  /* } */
-  /* case vpl_side_top: { */
-  /*   break; */
-  /* } */
-  /* default: */
-  /*   break; */
-  /* } */
+  switch (pin_side) {
+  case vpl_side_left: {
+    for (i = 0, ty = 0; i < pin_ind; ++i) {
+      ty += pins[i].size + node->pin_padding;
+    }
+    x = node->x + node->padding;
+    y = node->y + node->padding + ty;
+    break;
+  }
+  case vpl_side_right: {
+    for (i = 0, ty = 0; i < pin_ind; ++i) {
+      ty += pins[i].size + node->pin_padding;
+    }
+    x = node->x + node->w - node->padding;
+    y = node->y + node->padding + ty;
+    break;
+  }
+  case vpl_side_bottom: {
+    // TODO: bottom pins
+    break;
+  }
+  case vpl_side_top: {
+    // TODO: top pins, maybe under node label?
+    break;
+  }
+  default:
+    break;
+  }
 
   *px = x;
   *py = y;
@@ -116,39 +134,43 @@ void
 vpl_draw_pin(struct vpl_ctx *vpl,
              struct vpl_node *node,
              struct vpl_pin *pins,
-             int npins, int pin_ind) {
+             enum vpl_side pin_side,
+             int pin_count, int pin_ind) {
   NVGcontext *vg = vpl->nvg;
   struct vpl_pin *pin = &pins[pin_ind];
   float x = 0;
   float y = 0;
   float size = pin->size;
 
-  pin_get_positioning(node, pins, npins, pin_ind, &x, &y);
+  pin_get_positioning(node, pins, pin_side, pin_count, pin_ind, &x, &y);
 
 	nvgBeginPath(vg);
 	nvgRoundedRect(vg, x, y, size, size, size);
-	nvgFillColor(vg, nvgRGBA(pin->color.r, pin->color.g, pin->color.b,
-                           pin->color.a));
+	nvgFillColor(vg, nvgRGBAf(pin->color.r, pin->color.g, pin->color.b,
+                            pin->color.a));
 	nvgFill(vg);
 }
 
 
-void
+static void
 vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node) {
   float i = 0;
 
   // left pins
   for (i = 0; i < node->left_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->left_pins, node->left_pin_count, i);
+    vpl_draw_pin(vpl, node, node->left_pins, vpl_side_left, 
+                 node->left_pin_count, i);
   }
 
   // right pins
   for (i = 0; i < node->right_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->right_pins, node->right_pin_count, i);
+    vpl_draw_pin(vpl, node, node->right_pins, vpl_side_right, 
+                 node->right_pin_count, i);
   }
 
   // bottom pins
   for (i = 0; i < node->bottom_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->bottom_pins, node->bottom_pin_count, i);
+    vpl_draw_pin(vpl, node, node->bottom_pins, vpl_side_bottom, 
+                 node->bottom_pin_count, i);
   }
 }
