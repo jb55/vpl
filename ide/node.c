@@ -4,7 +4,7 @@
 struct vpl_node *
 vpl_node_init(struct vpl_node *node)
 {
-  node->roundness = 5.;
+  node->roundness = 10.;
   node->title = "node";
   node->x = 0;
   node->y = 0;

@@ -81,6 +81,6 @@ vpl_draw_ide(struct vpl_ctx *vpl, struct vpl_node *nodes, int len) {
 
 
 void
-vpl_draw_pin(struct vpl_ctx *vpl, struct vpl_pin *pin, float x, float y) {
+vpl_draw_pin(struct vpl_ctx *vpl, struct vpl_node * node, struct vpl_pin *pin) {
 
 }
