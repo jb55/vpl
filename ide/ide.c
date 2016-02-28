@@ -12,6 +12,8 @@
 #include "nanovg/nanovg_gl.h"
 #include "demo.h"
 #include "perf.h"
+#include "render.h"
+#include "node.h"
 
 
 void errorcb(int error, const char* desc)
@@ -25,16 +27,16 @@ int premult = 0;
 
 static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-	NVG_NOTUSED(scancode);
-	NVG_NOTUSED(mods);
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GL_TRUE);
-	if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-		blowup = !blowup;
-	if (key == GLFW_KEY_S && action == GLFW_PRESS)
-		screenshot = 1;
-	if (key == GLFW_KEY_P && action == GLFW_PRESS)
-		premult = !premult;
+  NVG_NOTUSED(scancode);
+  NVG_NOTUSED(mods);
+  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+  	glfwSetWindowShouldClose(window, GL_TRUE);
+  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
+  	blowup = !blowup;
+  if (key == GLFW_KEY_S && action == GLFW_PRESS)
+  	screenshot = 1;
+  if (key == GLFW_KEY_P && action == GLFW_PRESS)
+  	premult = !premult;
 }
 
 int main()
@@ -42,9 +44,18 @@ int main()
 	GLFWwindow* window;
 	DemoData data;
 	NVGcontext* vg = NULL;
+	struct vpl_ctx vpl;
 	GPUtimer gpuTimer;
 	PerfGraph fps, cpuGraph, gpuGraph;
 	double prevt = 0, cpuTime = 0;
+
+  struct vpl_node node;
+  vpl_node_init(&node);
+  node.x = 200;
+  node.y = 100;
+  node.w = 500;
+  node.h = 200;
+  struct vpl_node nodes[] = {node};
 
 	if (!glfwInit()) {
 		printf("Failed to init GLFW.");
@@ -97,6 +108,8 @@ int main()
 		return -1;
 	}
 
+  vpl.nvg = vg;
+
 	if (loadDemoData(vg, &data) == -1)
 		return -1;
 
@@ -138,7 +151,7 @@ int main()
 
 		nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
-		renderDemo(vg, mx,my, winWidth,winHeight, t, blowup, &data);
+		vpl_draw_ide(&vpl, nodes, 1);
 
 		renderGraph(vg, 5,5, &fps);
 		renderGraph(vg, 5+200+5,5, &cpuGraph);

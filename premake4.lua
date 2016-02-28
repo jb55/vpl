@@ -9,8 +9,8 @@ solution "nanovg"
 	project "vpl-ide"
 		kind "ConsoleApp"
 		language "C"
-		files { "vpl-ide/*.c", "common/*.c" }
-		includedirs { "common", "vpl-ide" }
+		files { "ide/*.c", "common/*.c" }
+		includedirs { "common", "ide" }
 		targetdir("build")
 		links { "nanovg" }
 
