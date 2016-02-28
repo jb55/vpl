@@ -2,11 +2,10 @@
 #define VPL_NODE_H
 
 enum vpl_pin_graphic {
-  vpl_pin_circle,
-  vpl_pin_square,
-  vpl_pin_star,
-  vpl_pin_custom,
-  VPL_PIN_GRAPHIC_COUNT
+  vpl_pin_graphic_circle,
+  vpl_pin_graphic_square,
+  vpl_pin_graphic_star,
+  vpl_pin_graphic_custom
 };
 
 enum vpl_side {
@@ -18,8 +17,7 @@ enum vpl_side {
 
 enum vpl_stroke {
   vpl_stroke_solid,
-  vpl_stroke_dashed,
-  VPL_STROKE_COUNT
+  vpl_stroke_dashed
 };
 
 struct vpl_color {
@@ -34,20 +32,31 @@ struct vpl_color {
 struct vpl_pin {
   float size;
   enum vpl_pin_graphic graphic;
+  enum vpl_side side;
   struct vpl_color border_color;
   struct vpl_color color;
 };
 
 struct vpl_node {
   float roundness;
+  float padding;
   char* title;
   float x, y, w, h;
-  int num_pins;
   struct vpl_color border_color;
-  struct vpl_pin *pins;
+
+  // pins
+  struct vpl_pin *left_pins;
+  struct vpl_pin *right_pins;
+  struct vpl_pin *bottom_pins;
+  int left_pin_count;
+  int right_pin_count;
+  int bottom_pin_count;
 };
 
 struct vpl_node *
 vpl_node_init(struct vpl_node *node);
+
+struct vpl_pin *
+vpl_pin_init(struct vpl_pin *pin);
 
 #endif /* VPL_NODE_H */

@@ -6,8 +6,7 @@
 #include <nanovg/nanovg.h>
 
 void
-vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node)
-{
+vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
 	NVGpaint shadowPaint;
 	NVGpaint headerPaint;
 
@@ -80,7 +79,76 @@ vpl_draw_ide(struct vpl_ctx *vpl, struct vpl_node *nodes, int len) {
 }
 
 
-void
-vpl_draw_pin(struct vpl_ctx *vpl, struct vpl_node * node, struct vpl_pin *pin) {
+static void
+pin_get_positioning(struct vpl_node *node,
+                    struct vpl_pin *pins,
+                    int npins, int pin_ind,
+                    float *px, float *py) {
+  float x = 0;
+  float y = 0;
 
+  /* switch (pin->side) { */
+  /* case vpl_side_left: { */
+  /*   x = node->x + node->padding; */
+  /*   x = node->x + node->padding; */
+  /*   break; */
+  /* } */
+  /* case vpl_side_right: { */
+  /*   x = */
+  /*   break; */
+  /* } */
+  /* case vpl_side_bottom: { */
+  /*   break; */
+  /* } */
+  /* case vpl_side_top: { */
+  /*   break; */
+  /* } */
+  /* default: */
+  /*   break; */
+  /* } */
+
+  *px = x;
+  *py = y;
+}
+
+
+void
+vpl_draw_pin(struct vpl_ctx *vpl,
+             struct vpl_node *node,
+             struct vpl_pin *pins,
+             int npins, int pin_ind) {
+  NVGcontext *vg = vpl->nvg;
+  struct vpl_pin *pin = &pins[pin_ind];
+  float x = 0;
+  float y = 0;
+  float size = pin->size;
+
+  pin_get_positioning(node, pins, npins, pin_ind, &x, &y);
+
+	nvgBeginPath(vg);
+	nvgRoundedRect(vg, x, y, size, size, size);
+	nvgFillColor(vg, nvgRGBA(pin->color.r, pin->color.g, pin->color.b,
+                           pin->color.a));
+	nvgFill(vg);
+}
+
+
+void
+vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node) {
+  float i = 0;
+
+  // left pins
+  for (i = 0; i < node->left_pin_count; i++) {
+    vpl_draw_pin(vpl, node, node->left_pins, node->left_pin_count, i);
+  }
+
+  // right pins
+  for (i = 0; i < node->right_pin_count; i++) {
+    vpl_draw_pin(vpl, node, node->right_pins, node->right_pin_count, i);
+  }
+
+  // bottom pins
+  for (i = 0; i < node->bottom_pin_count; i++) {
+    vpl_draw_pin(vpl, node, node->bottom_pins, node->bottom_pin_count, i);
+  }
 }
