@@ -6,8 +6,8 @@ struct vpl_node *
 vpl_node_init(struct vpl_node *node)
 {
   node->roundness = 10.f;
-  node->padding = 5.f;
-  node->pin_padding = 5.f;
+  node->padding = 8.f;
+  node->pin_padding = 12.f;
   node->title = "node";
   node->x = 0;
   node->y = 0;
@@ -38,6 +38,6 @@ vpl_pin_init(struct vpl_pin *pin) {
   pin->color.b = 0;
   pin->color.a = 1;
   pin->graphic = vpl_pin_graphic_circle;
-  pin->size = 10;
+  pin->size = 12;
   return pin;
 }

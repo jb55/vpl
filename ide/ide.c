@@ -53,13 +53,22 @@ int main()
   struct vpl_pin pin;
   vpl_node_init(&node);
   vpl_pin_init(&pin);
+  pin.border_color.r = 1;
+  pin.border_color.g = 1;
+  pin.border_color.b = 0;
   node.x = 200;
   node.y = 100;
-  node.w = 500;
+  node.w = 400;
   node.h = 200;
-  struct vpl_pin pins[] = {pin, pin};
-  node.left_pins = pins;
+  struct vpl_pin left_pins[] = {pin, pin};
+  node.left_pins = left_pins;
   node.left_pin_count = 2;
+  pin.border_color.r = 1;
+  pin.border_color.g = 0;
+  pin.border_color.b = 0;
+  struct vpl_pin right_pins[] = {pin, pin};
+  node.right_pins = right_pins;
+  node.right_pin_count = 2;
   struct vpl_node nodes[] = {node};
 
   if (!glfwInit()) {

@@ -8,6 +8,11 @@
 static void
 vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node);
 
+static NVGcolor
+vpl_nvg_color(struct vpl_color col) {
+  return nvgRGBAf(col.r, col.g, col.b, col.a);
+}
+
 void
 vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
   NVGpaint shadowPaint;
@@ -29,8 +34,9 @@ vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
   nvgBeginPath(vg);
   nvgRoundedRect(vg, x,y, w,h, cornerRadius);
   nvgFillColor(vg, nvgRGBA(28,30,34,192));
-//  nvgFillColor(vg, nvgRGBA(0,0,0,128));
   nvgFill(vg);
+  nvgStrokeColor(vg, vpl_nvg_color(node->border_color));
+  nvgStroke(vg);
 
   // Drop shadow
   shadowPaint = nvgBoxGradient(vg, x,y+2, w,h, cornerRadius*2, 10,
@@ -92,8 +98,10 @@ pin_get_positioning(struct vpl_node *node,
                     float *px, float *py) {
   int i = 0;
   float x = 0;
+  float y_offset = 40;
   float y = 0;
   float ty = 0;
+  struct vpl_pin *pin = &pins[pin_ind];
   // TODO: pin alignment based off pin_count
 
   switch (pin_side) {
@@ -102,15 +110,15 @@ pin_get_positioning(struct vpl_node *node,
       ty += pins[i].size + node->pin_padding;
     }
     x = node->x + node->padding;
-    y = node->y + node->padding + ty;
+    y = node->y + node->padding + ty + y_offset;
     break;
   }
   case vpl_side_right: {
     for (i = 0, ty = 0; i < pin_ind; ++i) {
       ty += pins[i].size + node->pin_padding;
     }
-    x = node->x + node->w - node->padding;
-    y = node->y + node->padding + ty;
+    x = node->x + node->w - pin->size - node->padding;
+    y = node->y + node->padding + ty + y_offset;
     break;
   }
   case vpl_side_bottom: {
@@ -146,9 +154,10 @@ vpl_draw_pin(struct vpl_ctx *vpl,
 
   nvgBeginPath(vg);
   nvgRoundedRect(vg, x, y, size, size, size);
-  nvgFillColor(vg, nvgRGBAf(pin->color.r, pin->color.g, pin->color.b,
-                            pin->color.a));
+  nvgFillColor(vg, vpl_nvg_color(pin->color));
   nvgFill(vg);
+  nvgStrokeColor(vg, vpl_nvg_color(pin->border_color));
+  nvgStroke(vg);
 }
 
 
