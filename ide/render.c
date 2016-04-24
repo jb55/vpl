@@ -6,7 +6,7 @@
 #include <nanovg/nanovg.h>
 
 static void
-vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node);
+vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node);
 
 static NVGcolor
 vpl_nvg_color(struct vpl_color col) {
@@ -14,7 +14,7 @@ vpl_nvg_color(struct vpl_color col) {
 }
 
 void
-vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
+vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
   NVGpaint shadowPaint;
   NVGpaint headerPaint;
 
@@ -35,6 +35,8 @@ vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
   nvgRoundedRect(vg, x,y, w,h, cornerRadius);
   nvgFillColor(vg, nvgRGBA(28,30,34,192));
   nvgFill(vg);
+
+  // border
   nvgStrokeColor(vg, vpl_nvg_color(node->border_color));
   nvgStroke(vg);
 
@@ -81,11 +83,11 @@ vpl_draw_node(struct vpl_ctx *vpl, struct vpl_node *node) {
 
 
 void
-vpl_draw_ide(struct vpl_ctx *vpl, struct vpl_node *nodes, int len) {
+vpl_ide_draw(struct vpl_ide *vpl, struct vpl_node *nodes, int len) {
   struct vpl_node *node;
   for (int i = 0; i < len; i++) {
     node = &nodes[i];
-    vpl_draw_node(vpl, node);
+    vpl_node_draw(vpl, node);
   }
 }
 
@@ -139,7 +141,7 @@ pin_get_positioning(struct vpl_node *node,
 
 
 void
-vpl_draw_pin(struct vpl_ctx *vpl,
+vpl_draw_pin(struct vpl_ide *vpl,
              struct vpl_node *node,
              struct vpl_pin *pins,
              enum vpl_side pin_side,
@@ -162,7 +164,7 @@ vpl_draw_pin(struct vpl_ctx *vpl,
 
 
 static void
-vpl_draw_pins(struct vpl_ctx *vpl, struct vpl_node * node) {
+vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
   float i = 0;
 
   // left pins

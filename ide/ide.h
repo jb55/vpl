@@ -4,8 +4,14 @@
 
 #include <nanovg/nanovg.h>
 
-struct vpl_ctx {
+#define VPL_NSTATE_IDLE (1 << 0)
+#define VPL_NSTATE_DRAG (1 << 1)
+
+struct vpl_ide {
   NVGcontext *nvg;
+  int m1, m2;
+  int interact_state;
+  struct vpl_node *active_node;
 };
 
 #endif /* VPL_IDE_H */

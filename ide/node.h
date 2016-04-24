@@ -39,9 +39,9 @@ struct vpl_pin {
 struct vpl_node {
   float roundness;
   float padding;
-  float pin_padding;
+  pin_padding; float
   char* title;
-  float x, y, w, h;
+  (float) x, y, w, h;
   struct vpl_color border_color;
 
   // pins
