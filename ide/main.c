@@ -14,6 +14,7 @@
 #include "perf.h"
 #include "render.h"
 #include "prelude.h"
+#include "ide.h"
 #include "node.h"
 
 
@@ -35,6 +36,8 @@ int main()
   static const int width = 1024;
   static const int height = 720;
   srand(time(NULL));
+
+  vpl_ide_init(&ide);
 
   struct vpl_node nodes[10];
   struct vpl_pin pin;
@@ -64,6 +67,9 @@ int main()
     node->right_pin_count = ARRAY_SIZE(right_pins);
   }
 
+  ide.nodes = nodes;
+  ide.num_nodes = ARRAY_SIZE(nodes);
+
   if (!glfwInit()) {
     printf("Failed to init GLFW.");
     return -1;
@@ -92,7 +98,7 @@ int main()
     return -1;
   }
 
-  glfwSetKeyCallback(window, key);
+  /* glfwSetKeyCallback(window, key); */
 
   glfwMakeContextCurrent(window);
 #ifdef NANOVG_GLEW
@@ -153,15 +159,12 @@ int main()
 
     // Update and render
     glViewport(0, 0, fbWidth, fbHeight);
-    if (premult)
-      glClearColor(0,0,0,0);
-    else
-      glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
+    glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
     nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
-    /* vpl_ide_interact(&ide, ); */
+    vpl_ide_interact(&ide, m1, mx, my);
     vpl_ide_draw(&ide, nodes, ARRAY_SIZE(nodes));
 
     renderGraph(vg, 5,5, &fps);
@@ -183,11 +186,6 @@ int main()
     for (i = 0; i < n; i++)
       updateGraph(&gpuGraph, gpuTimes[i]);
 
-    if (screenshot) {
-      screenshot = 0;
-      saveScreenShot(fbWidth, fbHeight, premult, "dump.png");
-    }
-
     glfwSwapBuffers(window);
     glfwPollEvents();
   }
@@ -202,19 +200,4 @@ int main()
 
   glfwTerminate();
   return 0;
-}
-
-
-static void key(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-  NVG_NOTUSED(scancode);
-  NVG_NOTUSED(mods);
-  if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-    glfwSetWindowShouldClose(window, GL_TRUE);
-  if (key == GLFW_KEY_SPACE && action == GLFW_PRESS)
-    blowup = !blowup;
-  if (key == GLFW_KEY_S && action == GLFW_PRESS)
-    screenshot = 1;
-  if (key == GLFW_KEY_P && action == GLFW_PRESS)
-    premult = !premult;
 }
