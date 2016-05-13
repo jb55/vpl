@@ -82,8 +82,11 @@ vpl_ide_mouseup(struct vpl_ide *ide) {
 static inline void
 vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
   struct vpl_pin *hit_pin;
+  static struct vpl_color hit_color = {128, 128, 128, 255};
+
   ide->interact_state |= VPL_NSTATE_M1DOWN;
   ide->active_node = vpl_ide_hit_nodes(ide, mx, my);
+
   if (ide->active_node) {
     ide->active_hit_x = mx - ide->active_node->x;
     ide->active_hit_y = my - ide->active_node->y;
@@ -92,6 +95,10 @@ vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
     hit_pin = vpl_ide_hit_pins(ide->active_node,
                                ide->active_hit_x,
                                ide->active_hit_y);
+
+    if (hit_pin) {
+      hit_pin->color = hit_color;
+    }
   }
 }
 
@@ -137,9 +144,7 @@ vpl_ide_hit_box(float x, float y, float w, float h, float mx, float my) {
 static inline int
 vpl_ide_hit_pin(struct vpl_node *node,
                 struct vpl_pin *pin, float nx, float ny) {
-  float x = node->x + pin->x;
-  float y = node->y + pin->y;
-  return vpl_ide_hit_box(x, y, pin->size, pin->size, nx, ny);
+  return vpl_ide_hit_box(pin->x, pin->y, pin->size, pin->size, nx, ny);
 }
 
 
@@ -150,6 +155,18 @@ vpl_ide_hit_pins(struct vpl_node *node, float nx, float ny) {
 
   for (i = 0; i < node->left_pin_count; ++i) {
     pin = &node->left_pins[i];
+    if (vpl_ide_hit_pin(node, pin, nx, ny))
+      return pin;
+  }
+
+  for (i = 0; i < node->right_pin_count; ++i) {
+    pin = &node->right_pins[i];
+    if (vpl_ide_hit_pin(node, pin, nx, ny))
+      return pin;
+  }
+
+  for (i = 0; i < node->bottom_pin_count; ++i) {
+    pin = &node->bottom_pins[i];
     if (vpl_ide_hit_pin(node, pin, nx, ny))
       return pin;
   }

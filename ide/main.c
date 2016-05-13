@@ -28,8 +28,11 @@ int main()
 {
   GLFWwindow* window;
   DemoData data;
+  int i = 0;
+  int j = 0;
   NVGcontext* vg = NULL;
   struct vpl_ide ide;
+  int pins_used = 0;
   GPUtimer gpuTimer;
   PerfGraph fps, cpuGraph, gpuGraph;
   double prevt = 0, cpuTime = 0;
@@ -40,31 +43,49 @@ int main()
   vpl_ide_init(&ide);
 
   struct vpl_node nodes[10];
-  struct vpl_pin pin;
-  vpl_pin_init(&pin);
-  for (int i = 0; i < ARRAY_SIZE(nodes); ++i) {
+  struct vpl_pin pins[1024];
+  struct vpl_pin *pin;
+
+  for (i = 0; i < ARRAY_SIZE(pins); ++i) {
+    vpl_pin_init(&pins[i]);
+  }
+
+  for (i = 0; i < ARRAY_SIZE(nodes); ++i) {
     struct vpl_node *node = &nodes[i];
+    pin = &pins[pins_used];
+
     vpl_node_init(node);
+
     node->x = rand() % width;
     node->y = rand() % height;
     node->w = 200;
     node->h = 150;
-    pin.border_color.r = 1;
-    pin.border_color.g = 1;
-    pin.border_color.b = 0;
 
     node->border_color.r = 1;
     node->border_color.g = 105.f / 255.f;
     node->border_color.b = 0;
-    struct vpl_pin left_pins[] = {pin, pin};
-    node->left_pins = left_pins;
-    node->left_pin_count = ARRAY_SIZE(left_pins);
-    pin.border_color.r = 1;
-    pin.border_color.g = 0;
-    pin.border_color.b = 0;
-    struct vpl_pin right_pins[] = {pin, pin, pin};
-    node->right_pins = right_pins;
-    node->right_pin_count = ARRAY_SIZE(right_pins);
+
+    for (j = 0; j < 2; j++) {
+      pin[j].border_color.r = 1;
+      pin[j].border_color.g = 1;
+      pin[j].border_color.b = 0;
+    }
+
+    node->left_pins = pin;
+    pins_used += 2;
+    node->left_pin_count = 2;
+
+    pin = &pins[pins_used];
+
+    for (j = 0; j < 3; j++) {
+      pin[j].border_color.r = 1;
+      pin[j].border_color.g = 0;
+      pin[j].border_color.b = 0;
+    }
+
+    node->right_pins = pin;
+    pins_used += 3;
+    node->right_pin_count = 3;
   }
 
   ide.nodes = nodes;
