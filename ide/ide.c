@@ -20,7 +20,7 @@ vpl_ide_hit_node(struct vpl_node *node, float mx, float my);
 void
 vpl_ide_init(struct vpl_ide *ide) {
   ide->interact_state = VPL_NSTATE_IDLE;
-  ide->active_hit_x = 0; 
+  ide->active_hit_x = 0;
   ide->active_hit_y = 0;
   ide->active_node  = 0;
   ide->num_nodes    = 0;
@@ -67,7 +67,7 @@ vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
 // TODO: quadtrees
 static struct vpl_node *
 vpl_ide_hit_nodes(struct vpl_ide *ide, float mx, float my) {
-  int i; 
+  int i;
   struct vpl_node *node;
 
   for (i = 0; i < ide->num_nodes; i++) {
@@ -76,7 +76,7 @@ vpl_ide_hit_nodes(struct vpl_ide *ide, float mx, float my) {
       return node;
     }
   }
- 
+
   return 0;
 }
 
