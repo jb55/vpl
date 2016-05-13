@@ -39,5 +39,7 @@ vpl_pin_init(struct vpl_pin *pin) {
   pin->color.a = 1;
   pin->graphic = vpl_pin_graphic_circle;
   pin->size = 12;
+  pin->x = 0;
+  pin->y = 0;
   return pin;
 }

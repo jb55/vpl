@@ -30,7 +30,7 @@ struct vpl_color {
 };
 
 struct vpl_pin {
-  float size;
+  float size, x, y;
   enum vpl_pin_graphic graphic;
   struct vpl_color border_color;
   struct vpl_color color;

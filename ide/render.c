@@ -91,7 +91,6 @@ vpl_ide_draw(struct vpl_ide *vpl, struct vpl_node *nodes, int len) {
   }
 }
 
-
 static void
 pin_get_positioning(struct vpl_node *node,
                     struct vpl_pin *pins,
@@ -140,22 +139,27 @@ pin_get_positioning(struct vpl_node *node,
 }
 
 
-void
-vpl_draw_pin(struct vpl_ide *vpl,
-             struct vpl_node *node,
-             struct vpl_pin *pins,
-             enum vpl_side pin_side,
-             int pin_count, int pin_ind) {
-  NVGcontext *vg = vpl->nvg;
+
+static void
+pin_update_position(struct vpl_node *node,
+                    struct vpl_pin *pins,
+                    enum vpl_side pin_side,
+                    int pin_count,
+                    int pin_ind) {
   struct vpl_pin *pin = &pins[pin_ind];
-  float x = 0;
-  float y = 0;
+  pin_get_positioning(node, pins, pin_side, pin_count, pin_ind,
+                      &pin->x, &pin->y);
+}
+
+
+
+void
+vpl_draw_pin(struct vpl_ide *vpl, struct vpl_pin *pin) {
+  NVGcontext *vg = vpl->nvg;
   float size = pin->size;
 
-  pin_get_positioning(node, pins, pin_side, pin_count, pin_ind, &x, &y);
-
   nvgBeginPath(vg);
-  nvgRoundedRect(vg, x, y, size, size, size);
+  nvgRoundedRect(vg, pin->x, pin->y, size, size, size);
   nvgFillColor(vg, vpl_nvg_color(pin->color));
   nvgFill(vg);
   nvgStrokeColor(vg, vpl_nvg_color(pin->border_color));
@@ -163,25 +167,47 @@ vpl_draw_pin(struct vpl_ide *vpl,
 }
 
 
+
+/**
+ *  Draw pins on a node
+ */
 static void
 vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
-  float i = 0;
+  int i = 0;
 
   // left pins
   for (i = 0; i < node->left_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->left_pins, vpl_side_left, 
-                 node->left_pin_count, i);
+    // TODO: separate update step for pin positioning
+    pin_update_position(node,
+                        node->left_pins,
+                        vpl_side_left,
+                        node->left_pin_count,
+                        i);
+
+    vpl_draw_pin(vpl, &node->left_pins[i]);
   }
 
   // right pins
   for (i = 0; i < node->right_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->right_pins, vpl_side_right, 
-                 node->right_pin_count, i);
+    // TODO: separate update step for pin positioning
+    pin_update_position(node,
+                        node->right_pins,
+                        vpl_side_right,
+                        node->right_pin_count,
+                        i);
+
+    vpl_draw_pin(vpl, &node->right_pins[i]);
   }
 
   // bottom pins
   for (i = 0; i < node->bottom_pin_count; i++) {
-    vpl_draw_pin(vpl, node, node->bottom_pins, vpl_side_bottom, 
-                 node->bottom_pin_count, i);
+    // TODO: separate update step for pin positioning
+    pin_update_position(node,
+                        node->bottom_pins,
+                        vpl_side_bottom,
+                        node->bottom_pin_count,
+                        i);
+
+    vpl_draw_pin(vpl, &node->bottom_pins[i]);
   }
 }
