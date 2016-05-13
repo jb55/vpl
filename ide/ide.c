@@ -16,8 +16,15 @@ vpl_ide_hit_nodes(struct vpl_ide *ide, float mx, float my);
 static int
 vpl_ide_hit_node(struct vpl_node *node, float mx, float my);
 
+static int
+vpl_ide_hit_box(float x, float y, float w, float h, float mx, float my);
+
 static struct vpl_pin *
-vpl_ide_hit_pin(struct vpl_node *node, float nx, float ny);
+vpl_ide_hit_pins(struct vpl_node *node, float nx, float ny);
+
+static int
+vpl_ide_hit_pin(struct vpl_node *node,
+                struct vpl_pin *pin, float nx, float ny);
 
 
 /**
@@ -42,10 +49,12 @@ void
 vpl_ide_interact(struct vpl_ide *ide, int m1, float mx, float my) {
   int m1_was_down = ide->interact_state & VPL_NSTATE_M1DOWN;
 
+  // wasn't down before, now is
   if (!m1_was_down && m1 == 1) {
     vpl_ide_mousedown(ide, mx, my);
   }
 
+  // was down before, now isn't
   if (m1_was_down && m1 == 0) {
     vpl_ide_mouseup(ide);
   }
@@ -80,9 +89,9 @@ vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
     ide->active_hit_y = my - ide->active_node->y;
 
     // TODO: pin hit detection
-    hit_pin = vpl_ide_hit_pin(ide->active_node,
-                              ide->active_hit_x,
-                              ide->active_hit_y);
+    hit_pin = vpl_ide_hit_pins(ide->active_node,
+                               ide->active_hit_x,
+                               ide->active_hit_y);
   }
 }
 
@@ -108,6 +117,11 @@ vpl_ide_hit_nodes(struct vpl_ide *ide, float mx, float my) {
   return 0;
 }
 
+static inline int
+vpl_ide_hit_node(struct vpl_node *node, float mx, float my) {
+  return vpl_ide_hit_box(node->x, node->y, node->w, node->h, mx, my);
+}
+
 
 /**
  *  IDE hit node
@@ -115,16 +129,30 @@ vpl_ide_hit_nodes(struct vpl_ide *ide, float mx, float my) {
  *  Check to see if a point is within a specific node
  */
 static inline int
-vpl_ide_hit_node(struct vpl_node *node, float mx, float my) {
-  // TODO: custom hit detection callback?
-  return mx >= node->x &&
-         mx <= node->x + node->w &&
-         my >= node->y &&
-         my <= node->y + node->h;
+vpl_ide_hit_box(float x, float y, float w, float h, float mx, float my) {
+  return mx >= x && mx <= x + w && my >= y && my <= y + h;
 }
 
 
+static inline int
+vpl_ide_hit_pin(struct vpl_node *node,
+                struct vpl_pin *pin, float nx, float ny) {
+  float x = node->x + pin->x;
+  float y = node->y + pin->y;
+  return vpl_ide_hit_box(x, y, pin->size, pin->size, nx, ny);
+}
+
 
 static inline struct vpl_pin *
-vpl_ide_hit_pin(struct vpl_node *node, float nx, float ny) {
+vpl_ide_hit_pins(struct vpl_node *node, float nx, float ny) {
+  int i;
+  struct vpl_pin *pin;
+
+  for (i = 0; i < node->left_pin_count; ++i) {
+    pin = &node->left_pins[i];
+    if (vpl_ide_hit_pin(node, pin, nx, ny))
+      return pin;
+  }
+
+  return NULL;
 }

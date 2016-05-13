@@ -110,24 +110,24 @@ pin_get_positioning(struct vpl_node *node,
     for (i = 0, ty = 0; i < pin_ind; ++i) {
       ty += pins[i].size + node->pin_padding;
     }
-    x = node->x + node->padding;
-    y = node->y + node->padding + ty + y_offset;
+    x = node->padding;
+    y = node->padding + ty + y_offset;
     break;
   }
   case vpl_side_right: {
     for (i = 0, ty = 0; i < pin_ind; ++i) {
       ty += pins[i].size + node->pin_padding;
     }
-    x = node->x + node->w - pin->size - node->padding;
-    y = node->y + node->padding + ty + y_offset;
+    x = node->w - pin->size - node->padding;
+    y = node->padding + ty + y_offset;
     break;
   }
   case vpl_side_bottom: {
-    // TODO: bottom pins
+    // TODO: position bottom pins
     break;
   }
   case vpl_side_top: {
-    // TODO: top pins, maybe under node label?
+    // TODO: position top pins, maybe under node label?
     break;
   }
   default:
@@ -154,12 +154,14 @@ pin_update_position(struct vpl_node *node,
 
 
 void
-vpl_draw_pin(struct vpl_ide *vpl, struct vpl_pin *pin) {
+vpl_draw_pin(struct vpl_ide *vpl,
+             struct vpl_node *node,
+             struct vpl_pin *pin) {
   NVGcontext *vg = vpl->nvg;
   float size = pin->size;
 
   nvgBeginPath(vg);
-  nvgRoundedRect(vg, pin->x, pin->y, size, size, size);
+  nvgRoundedRect(vg, node->x + pin->x, node->y + pin->y, size, size, size);
   nvgFillColor(vg, vpl_nvg_color(pin->color));
   nvgFill(vg);
   nvgStrokeColor(vg, vpl_nvg_color(pin->border_color));
@@ -184,7 +186,7 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
                         node->left_pin_count,
                         i);
 
-    vpl_draw_pin(vpl, &node->left_pins[i]);
+    vpl_draw_pin(vpl, node, &node->left_pins[i]);
   }
 
   // right pins
@@ -196,7 +198,7 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
                         node->right_pin_count,
                         i);
 
-    vpl_draw_pin(vpl, &node->right_pins[i]);
+    vpl_draw_pin(vpl, node, &node->right_pins[i]);
   }
 
   // bottom pins
@@ -208,6 +210,6 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
                         node->bottom_pin_count,
                         i);
 
-    vpl_draw_pin(vpl, &node->bottom_pins[i]);
+    vpl_draw_pin(vpl, node, &node->bottom_pins[i]);
   }
 }
