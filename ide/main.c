@@ -186,7 +186,7 @@ int main()
     nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
     vpl_ide_interact(&ide, m1, mx, my);
-    vpl_ide_draw(&ide, nodes, ARRAY_SIZE(nodes));
+    vpl_ide_draw(&ide, nodes, ARRAY_SIZE(nodes), mx, my);
 
     renderGraph(vg, 5,5, &fps);
     renderGraph(vg, 5+200+5,5, &cpuGraph);

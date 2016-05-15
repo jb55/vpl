@@ -60,6 +60,7 @@ vpl_ide_interact(struct vpl_ide *ide, int m1, float mx, float my) {
   }
 
   if (ide->interact_state & VPL_NSTATE_M1DOWN)
+  if ((ide->interact_state & VPL_NSTATE_PIN) == 0)
   if (ide->active_node != 0) {
     ide->active_node->x = mx - ide->active_hit_x;
     ide->active_node->y = my - ide->active_hit_y;
@@ -72,7 +73,7 @@ vpl_ide_interact(struct vpl_ide *ide, int m1, float mx, float my) {
  */
 static inline void
 vpl_ide_mouseup(struct vpl_ide *ide) {
-  ide->interact_state &= ~VPL_NSTATE_M1DOWN;
+  ide->interact_state &= ~(VPL_NSTATE_M1DOWN | VPL_NSTATE_PIN);
 }
 
 
@@ -97,7 +98,8 @@ vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
                                ide->active_hit_y);
 
     if (hit_pin) {
-      hit_pin->color = hit_color;
+      ide->active_pin = hit_pin;
+      ide->interact_state |= VPL_NSTATE_PIN;
     }
   }
 }

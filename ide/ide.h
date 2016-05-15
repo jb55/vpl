@@ -6,6 +6,7 @@
 
 #define VPL_NSTATE_IDLE (1 << 0)
 #define VPL_NSTATE_M1DOWN (1 << 1)
+#define VPL_NSTATE_PIN (1 << 2)
 
 #define MAX_NODES 65535
 
@@ -16,6 +17,7 @@ struct vpl_ide {
   // used for moving nodes
   float active_hit_x, active_hit_y;
   struct vpl_node *active_node;
+  struct vpl_pin  *active_pin;
 
   // nodes
   int num_nodes;

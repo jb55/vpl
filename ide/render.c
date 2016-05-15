@@ -8,6 +8,12 @@
 static void
 vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node);
 
+static void
+vpl_draw_wire(struct vpl_ide *vpl, float x1, float y1, float x2, float y2);
+
+static void
+vpl_draw_pin_wire(struct vpl_ide *vpl, struct vpl_pin *pin, float ex, float ey);
+
 static NVGcolor
 vpl_nvg_color(struct vpl_color col) {
   return nvgRGBAf(col.r, col.g, col.b, col.a);
@@ -19,7 +25,7 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
   NVGpaint headerPaint;
 
   float cornerRadius = node->roundness;
-  NVGcontext *vg = vpl->nvg;
+  NVGcontext *nvg = vpl->nvg;
 
   float x = node->x;
   float y = node->y;
@@ -28,54 +34,54 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
 
   char *title = node->title;
 
-  nvgSave(vg);
+  nvgSave(nvg);
 
   // Window
-  nvgBeginPath(vg);
-  nvgRoundedRect(vg, x,y, w,h, cornerRadius);
-  nvgFillColor(vg, nvgRGBA(28,30,34,192));
-  nvgFill(vg);
+  nvgBeginPath(nvg);
+  nvgRoundedRect(nvg, x,y, w,h, cornerRadius);
+  nvgFillColor(nvg, nvgRGBA(28,30,34,192));
+  nvgFill(nvg);
 
   // border
-  nvgStrokeColor(vg, vpl_nvg_color(node->border_color));
-  nvgStroke(vg);
+  nvgStrokeColor(nvg, vpl_nvg_color(node->border_color));
+  nvgStroke(nvg);
 
   // Drop shadow
-  shadowPaint = nvgBoxGradient(vg, x,y+2, w,h, cornerRadius*2, 10,
+  shadowPaint = nvgBoxGradient(nvg, x,y+2, w,h, cornerRadius*2, 10,
                                nvgRGBA(0,0,0,128), nvgRGBA(0,0,0,0));
-  nvgBeginPath(vg);
-  nvgRect(vg, x-10,y-10, w+20,h+30);
-  nvgRoundedRect(vg, x,y, w,h, cornerRadius);
-  nvgPathWinding(vg, NVG_HOLE);
-  nvgFillPaint(vg, shadowPaint);
-  nvgFill(vg);
+  nvgBeginPath(nvg);
+  nvgRect(nvg, x-10,y-10, w+20,h+30);
+  nvgRoundedRect(nvg, x,y, w,h, cornerRadius);
+  nvgPathWinding(nvg, NVG_HOLE);
+  nvgFillPaint(nvg, shadowPaint);
+  nvgFill(nvg);
 
   // Header
-  headerPaint = nvgLinearGradient(vg, x,y,x,y+15, nvgRGBA(255,255,255,8),
+  headerPaint = nvgLinearGradient(nvg, x,y,x,y+15, nvgRGBA(255,255,255,8),
                                   nvgRGBA(0,0,0,16));
-  nvgBeginPath(vg);
-  nvgRoundedRect(vg, x+1,y+1, w-2,30, cornerRadius-1);
-  nvgFillPaint(vg, headerPaint);
-  nvgFill(vg);
-  nvgBeginPath(vg);
-  nvgMoveTo(vg, x+0.5f, y+0.5f+30);
-  nvgLineTo(vg, x+0.5f+w-1, y+0.5f+30);
-  nvgStrokeColor(vg, nvgRGBA(0,0,0,32));
-  nvgStroke(vg);
+  nvgBeginPath(nvg);
+  nvgRoundedRect(nvg, x+1,y+1, w-2,30, cornerRadius-1);
+  nvgFillPaint(nvg, headerPaint);
+  nvgFill(nvg);
+  nvgBeginPath(nvg);
+  nvgMoveTo(nvg, x+0.5f, y+0.5f+30);
+  nvgLineTo(nvg, x+0.5f+w-1, y+0.5f+30);
+  nvgStrokeColor(nvg, nvgRGBA(0,0,0,32));
+  nvgStroke(nvg);
 
-  nvgFontSize(vg, 18.0f);
-  nvgFontFace(vg, "sans-bold");
-  nvgTextAlign(vg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
+  nvgFontSize(nvg, 18.0f);
+  nvgFontFace(nvg, "sans-bold");
+  nvgTextAlign(nvg,NVG_ALIGN_CENTER|NVG_ALIGN_MIDDLE);
 
-  /* nvgFontBlur(vg,2); */
-  nvgFillColor(vg, nvgRGBA(0,0,0,128));
-  nvgText(vg, x+w/2,y+16+1, title, NULL);
+  /* nvgFontBlur(nvg,2); */
+  nvgFillColor(nvg, nvgRGBA(0,0,0,128));
+  nvgText(nvg, x+w/2,y+16+1, title, NULL);
 
-  /* nvgFontBlur(vg,0); */
-  nvgFillColor(vg, nvgRGBA(220,220,220,160));
-  nvgText(vg, x+w/2,y+16, title, NULL);
+  /* nvgFontBlur(nvg,0); */
+  nvgFillColor(nvg, nvgRGBA(220,220,220,160));
+  nvgText(nvg, x+w/2,y+16, title, NULL);
 
-  nvgRestore(vg);
+  nvgRestore(nvg);
 
   vpl_draw_pins(vpl, node);
 }
@@ -83,11 +89,18 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
 
 
 void
-vpl_ide_draw(struct vpl_ide *vpl, struct vpl_node *nodes, int len) {
+vpl_ide_draw(struct vpl_ide *ide, struct vpl_node *nodes, int len, float mx, float my) {
   struct vpl_node *node;
+
   for (int i = 0; i < len; i++) {
     node = &nodes[i];
-    vpl_node_draw(vpl, node);
+    vpl_node_draw(ide, node);
+  }
+
+  // we have an active pin if we're dragging from it
+  if (ide->interact_state & VPL_NSTATE_PIN)
+  if (ide->active_pin) {
+    vpl_draw_pin_wire(ide, ide->active_pin, mx, my);
   }
 }
 
@@ -157,15 +170,15 @@ void
 vpl_draw_pin(struct vpl_ide *vpl,
              struct vpl_node *node,
              struct vpl_pin *pin) {
-  NVGcontext *vg = vpl->nvg;
+  NVGcontext *nvg = vpl->nvg;
   float size = pin->size;
 
-  nvgBeginPath(vg);
-  nvgRoundedRect(vg, node->x + pin->x, node->y + pin->y, size, size, size);
-  nvgFillColor(vg, vpl_nvg_color(pin->color));
-  nvgFill(vg);
-  nvgStrokeColor(vg, vpl_nvg_color(pin->border_color));
-  nvgStroke(vg);
+  nvgBeginPath(nvg);
+  nvgRoundedRect(nvg, node->x + pin->x, node->y + pin->y, size, size, size);
+  nvgFillColor(nvg, vpl_nvg_color(pin->color));
+  nvgFill(nvg);
+  nvgStrokeColor(nvg, vpl_nvg_color(pin->border_color));
+  nvgStroke(nvg);
 }
 
 
@@ -212,4 +225,25 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
 
     vpl_draw_pin(vpl, node, &node->bottom_pins[i]);
   }
+}
+
+
+static void
+vpl_draw_pin_wire(struct vpl_ide *ide, struct vpl_pin *pin, float ex, float ey) {
+  float x1 = pin->x + pin->size / 2;
+  float y1 = pin->y + pin->size / 2;
+
+  vpl_draw_wire(ide, x1, y1, ex, ey);
+}
+
+
+static void
+vpl_draw_wire(struct vpl_ide *ide, float x1, float y1, float x2, float y2) {
+  NVGcontext *nvg = ide->nvg;
+
+	nvgBeginPath(nvg);
+  nvgBezierTo(nvg, x1, y1, x2, y2, 1, 1);
+	nvgStrokeColor(nvg, nvgRGBA(255, 255, 255, 1));
+	nvgStrokeWidth(nvg, 3.0f);
+  nvgStroke(nvg);
 }
