@@ -2,6 +2,7 @@
 #include "prelude.h"
 #include "node.h"
 #include "ide.h"
+#include <stdio.h>
 
 #include <nanovg/nanovg.h>
 
@@ -12,7 +13,10 @@ static void
 vpl_draw_wire(struct vpl_ide *vpl, float x1, float y1, float x2, float y2);
 
 static void
-vpl_draw_pin_wire(struct vpl_ide *vpl, struct vpl_pin *pin, float ex, float ey);
+vpl_draw_pin_wire(struct vpl_ide *vpl,
+                  struct vpl_node *node,
+                  struct vpl_pin *pin,
+                  float ex, float ey);
 
 static NVGcolor
 vpl_nvg_color(struct vpl_color col) {
@@ -90,6 +94,7 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
 
 void
 vpl_ide_draw(struct vpl_ide *ide, struct vpl_node *nodes, int len, float mx, float my) {
+  static int count = 0;
   struct vpl_node *node;
 
   for (int i = 0; i < len; i++) {
@@ -99,9 +104,11 @@ vpl_ide_draw(struct vpl_ide *ide, struct vpl_node *nodes, int len, float mx, flo
 
   // we have an active pin if we're dragging from it
   if (ide->interact_state & VPL_NSTATE_PIN)
+  if (ide->active_node)
   if (ide->active_pin) {
-    vpl_draw_pin_wire(ide, ide->active_pin, mx, my);
+    vpl_draw_pin_wire(ide, ide->active_node, ide->active_pin, mx, my);
   }
+
 }
 
 static void
@@ -229,9 +236,12 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
 
 
 static void
-vpl_draw_pin_wire(struct vpl_ide *ide, struct vpl_pin *pin, float ex, float ey) {
-  float x1 = pin->x + pin->size / 2;
-  float y1 = pin->y + pin->size / 2;
+vpl_draw_pin_wire(struct vpl_ide *ide,
+                  struct vpl_node *node,
+                  struct vpl_pin *pin,
+                  float ex, float ey) {
+  float x1 = node->x + pin->x + pin->size / 2;
+  float y1 = node->y + pin->y + pin->size / 2;
 
   vpl_draw_wire(ide, x1, y1, ex, ey);
 }
@@ -241,9 +251,17 @@ static void
 vpl_draw_wire(struct vpl_ide *ide, float x1, float y1, float x2, float y2) {
   NVGcontext *nvg = ide->nvg;
 
+  printf("p1 (%f, %f) p2 (%f, %f)\n", x1, y2, x2, y2);
+
 	nvgBeginPath(nvg);
-  nvgBezierTo(nvg, x1, y1, x2, y2, 1, 1);
-	nvgStrokeColor(nvg, nvgRGBA(255, 255, 255, 1));
-	nvgStrokeWidth(nvg, 3.0f);
+  /* nvgBezierTo(nvg, 10, 10, 20, 20, 30, 30); */
+
+	nvgMoveTo(nvg, x1, y1);
+  nvgQuadTo(nvg, x1*1.1, y1*1.1, x2, y2);
+  /* nvgLineTo(nvg, 100, 100); */
+  /* nvgLineTo(nvg, x2, y2); */
+	nvgStrokeColor(nvg, nvgRGBA(255, 255, 255, 255));
+	nvgStrokeWidth(nvg, 4.0f);
   nvgStroke(nvg);
+	nvgStrokeWidth(nvg, 1.0f);
 }
