@@ -61,9 +61,9 @@ int main()
     node->w = 200;
     node->h = 150;
 
-    node->border_color.r = 1;
-    node->border_color.g = 105.f / 255.f;
-    node->border_color.b = 0;
+    node->border_color.r = (rand() % 255) / 255.f;
+    node->border_color.g = (rand() % 255) / 255.f;
+    node->border_color.b = (rand() % 255) / 255.f;
 
     for (j = 0; j < 2; j++) {
       pin[j].border_color.r = 1;
