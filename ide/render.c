@@ -251,7 +251,7 @@ static void
 vpl_draw_wire(struct vpl_ide *ide, float x1, float y1, float x2, float y2) {
   NVGcontext *nvg = ide->nvg;
 
-  printf("p1 (%f, %f) p2 (%f, %f)\n", x1, y2, x2, y2);
+  /* printf("p1 (%f, %f) p2 (%f, %f)\n", x1, y2, x2, y2); */
 
 	nvgBeginPath(nvg);
   /* nvgBezierTo(nvg, 10, 10, 20, 20, 30, 30); */
