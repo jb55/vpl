@@ -8,6 +8,6 @@ void
 vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node);
 
 void
-vpl_ide_draw(struct vpl_ide *vpl, struct vpl_node *nodes, int len, float mx, float my);
+vpl_ide_draw(struct vpl_ide *vpl, float mx, float my);
 
 #endif /* VPL_RENDER_H */

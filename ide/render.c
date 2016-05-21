@@ -1,5 +1,4 @@
 
-#include "prelude.h"
 #include "node.h"
 #include "ide.h"
 #include <stdio.h>
@@ -93,12 +92,11 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
 
 
 void
-vpl_ide_draw(struct vpl_ide *ide, struct vpl_node *nodes, int len, float mx, float my) {
-  static int count = 0;
+vpl_ide_draw(struct vpl_ide *ide, float mx, float my) {
   struct vpl_node *node;
 
-  for (int i = 0; i < len; i++) {
-    node = &nodes[i];
+  for (int i = 0; i < ide->num_nodes; i++) {
+    node = &ide->nodes[i];
     vpl_node_draw(ide, node);
   }
 

@@ -24,27 +24,18 @@ void errorcb(int error, const char* desc)
 }
 
 
-int main()
-{
-  GLFWwindow* window;
-  DemoData data;
+ide_initializate(struct vpl_ide *ide, int width, int height) {
   int i = 0;
   int j = 0;
-  NVGcontext* vg = NULL;
-  struct vpl_ide ide;
   int pins_used = 0;
-  GPUtimer gpuTimer;
-  PerfGraph fps, cpuGraph, gpuGraph;
-  double prevt = 0, cpuTime = 0;
-  static const int width = 1024;
-  static const int height = 720;
-  srand(time(NULL));
 
-  vpl_ide_init(&ide);
+  static const int pin_size = 15;
+  static struct vpl_node nodes[10];
+  static struct vpl_pin pins[1024];
+  static struct vpl_pin *pin;
 
-  struct vpl_node nodes[10];
-  struct vpl_pin pins[1024];
-  struct vpl_pin *pin;
+
+  vpl_ide_init(ide);
 
   for (i = 0; i < ARRAY_SIZE(pins); ++i) {
     vpl_pin_init(&pins[i]);
@@ -66,6 +57,7 @@ int main()
     node->border_color.b = (rand() % 255) / 255.f;
 
     for (j = 0; j < 2; j++) {
+      pin[j].size = pin_size;
       pin[j].border_color.r = 1;
       pin[j].border_color.g = 1;
       pin[j].border_color.b = 0;
@@ -78,6 +70,7 @@ int main()
     pin = &pins[pins_used];
 
     for (j = 0; j < 3; j++) {
+      pin[j].size = pin_size;
       pin[j].border_color.r = 1;
       pin[j].border_color.g = 0;
       pin[j].border_color.b = 0;
@@ -88,8 +81,25 @@ int main()
     node->right_pin_count = 3;
   }
 
-  ide.nodes = nodes;
-  ide.num_nodes = ARRAY_SIZE(nodes);
+  ide->nodes = nodes;
+  ide->num_nodes = ARRAY_SIZE(nodes);
+}
+
+
+int main()
+{
+  GLFWwindow* window;
+  DemoData data;
+  NVGcontext* vg = NULL;
+  struct vpl_ide ide;
+  GPUtimer gpuTimer;
+  PerfGraph fps, cpuGraph, gpuGraph;
+  double prevt = 0, cpuTime = 0;
+  static const int width = 1024;
+  static const int height = 720;
+  srand(time(NULL));
+
+  ide_initializate(&ide, width, height);
 
   if (!glfwInit()) {
     printf("Failed to init GLFW.");
@@ -186,7 +196,7 @@ int main()
     nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
 
     vpl_ide_interact(&ide, m1, mx, my);
-    vpl_ide_draw(&ide, nodes, ARRAY_SIZE(nodes), mx, my);
+    vpl_ide_draw(&ide, mx, my);
 
     renderGraph(vg, 5,5, &fps);
     renderGraph(vg, 5+200+5,5, &cpuGraph);
