@@ -8,8 +8,6 @@
 #define VPL_NSTATE_M1DOWN (1 << 1)
 #define VPL_NSTATE_PIN (1 << 2)
 
-#define MAX_NODES 65535
-
 struct vpl_ide {
   NVGcontext *nvg;
   int interact_state;
@@ -22,6 +20,9 @@ struct vpl_ide {
   // nodes
   int num_nodes;
   struct vpl_node *nodes;
+
+  int num_wires;
+  struct vpl_wire *wires;
 };
 
 void vpl_ide_init(struct vpl_ide *ide);

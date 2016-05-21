@@ -1,6 +1,8 @@
 #ifndef VPL_NODE_H
 #define VPL_NODE_H
 
+#include "color.h"
+
 enum vpl_pin_graphic {
   vpl_pin_graphic_circle,
   vpl_pin_graphic_square,
@@ -18,15 +20,6 @@ enum vpl_side {
 enum vpl_stroke {
   vpl_stroke_solid,
   vpl_stroke_dashed
-};
-
-struct vpl_color {
-  union {
-    float rgba[4];
-    struct {
-      float r, g, b, a;
-    };
-  };
 };
 
 struct vpl_pin {
