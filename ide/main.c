@@ -24,6 +24,7 @@ void errorcb(int error, const char* desc)
 }
 
 
+void
 ide_initializate(struct vpl_ide *ide, int width, int height) {
   int i = 0;
   int j = 0;
@@ -61,6 +62,7 @@ ide_initializate(struct vpl_ide *ide, int width, int height) {
       pin[j].border_color.r = 1;
       pin[j].border_color.g = 1;
       pin[j].border_color.b = 0;
+      pin[j].parent = node;
     }
 
     node->left_pins = pin;
@@ -74,6 +76,7 @@ ide_initializate(struct vpl_ide *ide, int width, int height) {
       pin[j].border_color.r = 1;
       pin[j].border_color.g = 0;
       pin[j].border_color.b = 0;
+      pin[j].parent = node;
     }
 
     node->right_pins = pin;
@@ -221,6 +224,7 @@ int main()
     glfwPollEvents();
   }
 
+  vpl_ide_destroy(&ide);
   freeDemoData(vg, &data);
 
   nvgDeleteGL3(vg);

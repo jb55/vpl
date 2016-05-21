@@ -1,13 +1,16 @@
 
 #include "ide.h"
 #include "node.h"
+#include "wire.h"
 #include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 int blowup = 0;
 int screenshot = 0;
 int premult = 0;
 
-static void vpl_ide_mouseup(struct vpl_ide *ide);
+static void vpl_ide_mouseup(struct vpl_ide *ide, float mx, float my);
 static void vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my);
 
 static struct vpl_node *
@@ -37,6 +40,14 @@ vpl_ide_init(struct vpl_ide *ide) {
   ide->active_hit_y = 0;
   ide->active_node  = 0;
   ide->num_nodes    = 0;
+  ide->num_wires    = 0;
+  ide->alloc_wires  = VPL_ALLOC_WIRES;
+  ide->wires = malloc(sizeof(struct vpl_wire)*VPL_ALLOC_WIRES);
+}
+
+void
+vpl_ide_destroy(struct vpl_ide *ide) {
+  free(ide->wires);
 }
 
 
@@ -56,7 +67,7 @@ vpl_ide_interact(struct vpl_ide *ide, int m1, float mx, float my) {
 
   // was down before, now isn't
   if (m1_was_down && m1 == 0) {
-    vpl_ide_mouseup(ide);
+    vpl_ide_mouseup(ide, mx, my);
   }
 
   if (ide->interact_state & VPL_NSTATE_M1DOWN)
@@ -72,7 +83,33 @@ vpl_ide_interact(struct vpl_ide *ide, int m1, float mx, float my) {
  *  Called after a mouseup event
  */
 static inline void
-vpl_ide_mouseup(struct vpl_ide *ide) {
+vpl_ide_mouseup(struct vpl_ide *ide, float mx, float my) {
+
+  struct vpl_node *hit_node;
+  struct vpl_pin *hit_pin;
+  struct vpl_pin *start_pin;
+
+  start_pin = ide->active_pin;
+  hit_node = vpl_ide_hit_nodes(ide, mx, my);
+
+  if (hit_node) {
+    // hit the pin where we dropped
+    hit_pin = vpl_ide_hit_pins(hit_node, mx - hit_node->x, my - hit_node->y);
+
+    // TODO: lang specific logic here
+    if (hit_pin != start_pin)
+    if (hit_pin)
+    if (start_pin)
+    if (ide->interact_state & VPL_NSTATE_PIN) {
+      struct vpl_wire wire = { .start_pin = start_pin,
+                               .end_pin   = hit_pin
+                             };
+      printf("adding wire %p %p\n", wire.start_pin, wire.end_pin);
+      vpl_ide_add_wire(ide, wire);
+    }
+  }
+
+
   ide->interact_state &= ~(VPL_NSTATE_M1DOWN | VPL_NSTATE_PIN);
 }
 

@@ -1,6 +1,8 @@
 
 #include "node.h"
 #include "ide.h"
+#include "wire.h"
+
 #include <stdio.h>
 
 #include <nanovg/nanovg.h>
@@ -9,13 +11,20 @@ static void
 vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node);
 
 static void
-vpl_draw_wire(struct vpl_ide *vpl, float x1, float y1, float x2, float y2);
+vpl_draw_quad(struct vpl_ide *vpl, float x1, float y1, float x2, float y2);
+
+static void
+vpl_draw_wire(struct vpl_ide *ide, struct vpl_wire *wire);
 
 static void
 vpl_draw_pin_wire(struct vpl_ide *vpl,
-                  struct vpl_node *node,
                   struct vpl_pin *pin,
                   float ex, float ey);
+
+static void
+vpl_draw_pins_wire(struct vpl_ide *ide,
+                   struct vpl_pin *start_pin,
+                   struct vpl_pin *end_pin);
 
 static NVGcolor
 vpl_nvg_color(struct vpl_color col) {
@@ -93,18 +102,24 @@ vpl_node_draw(struct vpl_ide *vpl, struct vpl_node *node) {
 
 void
 vpl_ide_draw(struct vpl_ide *ide, float mx, float my) {
+  int i = 0;
   struct vpl_node *node;
 
-  for (int i = 0; i < ide->num_nodes; i++) {
+  for (i = 0; i < ide->num_nodes; i++) {
     node = &ide->nodes[i];
     vpl_node_draw(ide, node);
+  }
+
+  // draw static wires
+  for (i = 0; i < ide->num_wires; i++) {
+    vpl_draw_wire(ide, &ide->wires[i]);
   }
 
   // we have an active pin if we're dragging from it
   if (ide->interact_state & VPL_NSTATE_PIN)
   if (ide->active_node)
   if (ide->active_pin) {
-    vpl_draw_pin_wire(ide, ide->active_node, ide->active_pin, mx, my);
+    vpl_draw_pin_wire(ide, ide->active_pin, mx, my);
   }
 
 }
@@ -235,18 +250,35 @@ vpl_draw_pins(struct vpl_ide *vpl, struct vpl_node * node) {
 
 static void
 vpl_draw_pin_wire(struct vpl_ide *ide,
-                  struct vpl_node *node,
                   struct vpl_pin *pin,
                   float ex, float ey) {
+  struct vpl_node *node = pin->parent;
   float x1 = node->x + pin->x + pin->size / 2;
   float y1 = node->y + pin->y + pin->size / 2;
 
-  vpl_draw_wire(ide, x1, y1, ex, ey);
+  vpl_draw_quad(ide, x1, y1, ex, ey);
 }
 
 
 static void
-vpl_draw_wire(struct vpl_ide *ide, float x1, float y1, float x2, float y2) {
+vpl_draw_pins_wire(struct vpl_ide *ide,
+                   struct vpl_pin *start_pin,
+                   struct vpl_pin *end_pin) {
+
+  float ex = end_pin->parent->x + end_pin->x + end_pin->size / 2;
+  float ey = end_pin->parent->y + end_pin->y + end_pin->size / 2;
+
+  vpl_draw_pin_wire(ide, start_pin, ex, ey);
+}
+
+
+static void
+vpl_draw_wire(struct vpl_ide *ide, struct vpl_wire *wire) {
+  vpl_draw_pins_wire(ide, wire->start_pin, wire->end_pin);
+}
+
+static void
+vpl_draw_quad(struct vpl_ide *ide, float x1, float y1, float x2, float y2) {
   NVGcontext *nvg = ide->nvg;
 
   /* printf("p1 (%f, %f) p2 (%f, %f)\n", x1, y2, x2, y2); */

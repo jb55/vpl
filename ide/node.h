@@ -25,6 +25,7 @@ enum vpl_stroke {
 struct vpl_pin {
   float size, x, y;
   enum vpl_pin_graphic graphic;
+  struct vpl_node *parent;
   struct vpl_color border_color;
   struct vpl_color color;
 };
