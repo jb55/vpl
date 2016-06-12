@@ -1,0 +1,16 @@
+* Initial programming language
+- [ ] Lua or Terra integration
+- [ ] Programming language data attached to nodes
+* Generic Visual programming IDE [0/2]
+- [ ] Group selection
+- [ ] Wires
+  - [ ] Better visuals
+** TODO Completion window
+- [ ] Windows as nodes?
+- [ ] NanoVG gui system?
+** TODO Compile to LLVM [0/1]
+- [ ] Do [[http://llvm.org/docs/tutorial/LangImpl3.html][Kaleidoscope tutorial]] [0/2]
+  - [ ] [[http://llvm.org/docs/tutorial/LangImpl3.html#id2][Code generation setup]]
+  - [ ] [[http://llvm.org/docs/tutorial/LangImpl3.html#expression-code-generation][Expression code generation]]
+** TODO Turning off text pixel-snapping                             :nanovg:
+https://github.com/memononen/nanovg/issues/266
