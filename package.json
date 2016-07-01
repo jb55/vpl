@@ -1,0 +1,8 @@
+{
+  "name": "vpl",
+  "version": "0.0.0",
+  "repo": "jb55/vpl",
+  "dependencies": {
+    "rxi/vec": "0.2.1"
+  }
+}
