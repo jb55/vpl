@@ -10,6 +10,11 @@
 
 #define VPL_ALLOC_WIRES 32768
 
+#define vpl_vec(T, name)                             \
+  struct name { T *data; int length, capacity; }
+
+vpl_vec(struct vpl_wire, vec_wire);
+
 struct vpl_ide {
   NVGcontext *nvg;
   int interact_state;
@@ -23,9 +28,7 @@ struct vpl_ide {
   int num_nodes;
   struct vpl_node *nodes;
 
-  int num_wires;
-  int alloc_wires;
-  struct vpl_wire *wires;
+  struct vec_wire vec_wires;
 };
 
 void vpl_ide_init(struct vpl_ide *ide);

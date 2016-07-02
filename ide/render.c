@@ -111,8 +111,8 @@ vpl_ide_draw(struct vpl_ide *ide, float mx, float my) {
   }
 
   // draw static wires
-  for (i = 0; i < ide->num_wires; i++) {
-    vpl_draw_wire(ide, &ide->wires[i]);
+  for (i = 0; i < ide->vec_wires.length; i++) {
+    vpl_draw_wire(ide, &ide->vec_wires.data[i]);
   }
 
   // we have an active pin if we're dragging from it

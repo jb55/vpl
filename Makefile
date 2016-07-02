@@ -6,3 +6,8 @@ build/vpl-ide: build/Makefile
 
 build/Makefile: premake4.lua
 	premake4 gmake
+
+clean:
+	rm -rf build
+
+.PHONY: clean

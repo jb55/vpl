@@ -2,6 +2,7 @@
 #include "ide.h"
 #include "node.h"
 #include "wire.h"
+#include "vec/vec.h"
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -40,14 +41,12 @@ vpl_ide_init(struct vpl_ide *ide) {
   ide->active_hit_y = 0;
   ide->active_node  = 0;
   ide->num_nodes    = 0;
-  ide->num_wires    = 0;
-  ide->alloc_wires  = VPL_ALLOC_WIRES;
-  ide->wires = malloc(sizeof(struct vpl_wire)*VPL_ALLOC_WIRES);
+  vec_init(&ide->vec_wires);
 }
 
 void
 vpl_ide_destroy(struct vpl_ide *ide) {
-  free(ide->wires);
+  vec_deinit(&ide->vec_wires);
 }
 
 
@@ -120,7 +119,7 @@ vpl_ide_mouseup(struct vpl_ide *ide, float mx, float my) {
 static inline void
 vpl_ide_mousedown(struct vpl_ide *ide, float mx, float my) {
   struct vpl_pin *hit_pin;
-  static struct vpl_color hit_color = {128, 128, 128, 255};
+  /* static struct vpl_color hit_color = {128, 128, 128, 255}; */
 
   ide->interact_state |= VPL_NSTATE_M1DOWN;
   ide->active_node = vpl_ide_hit_nodes(ide, mx, my);
