@@ -5,7 +5,7 @@
 #ifdef __APPLE__
 #  define GLFW_INCLUDE_GLCOREARB
 #endif
-#include <GLFW/glfw3.h>
+#include <SDL2/SDL.h>
 #include <time.h>
 #include "nanovg/nanovg.h"
 #define NANOVG_GL3_IMPLEMENTATION
@@ -17,6 +17,7 @@
 #include "ide.h"
 #include "node.h"
 
+static int sdl_init( SDL_Window **w );
 
 void errorcb(int error, const char* desc)
 {
@@ -91,50 +92,30 @@ ide_initializate(struct vpl_ide *ide, int width, int height) {
 
 int main()
 {
-  GLFWwindow* window;
+  SDL_Window* window = NULL;
+
+  if (sdl_init(&window) != 0) {
+    printf( "Couldn't init SDL: %s\n", SDL_GetError() );
+    return 1;
+  }
+
   DemoData data;
   NVGcontext* vg = NULL;
   struct vpl_ide ide;
   GPUtimer gpuTimer;
   PerfGraph fps, cpuGraph, gpuGraph;
-  double prevt = 0, cpuTime = 0;
+  u32 prevt = 0, cpuTime = 0;
+  int quit = 0;
   static const int width = 1024;
   static const int height = 720;
   srand(time(NULL));
 
   ide_initializate(&ide, width, height);
 
-  if (!glfwInit()) {
-    printf("Failed to init GLFW.");
-    return -1;
-  }
-
   initGraph(&fps, GRAPH_RENDER_FPS, "Frame Time");
   initGraph(&cpuGraph, GRAPH_RENDER_MS, "CPU Time");
   initGraph(&gpuGraph, GRAPH_RENDER_MS, "GPU Time");
 
-  glfwSetErrorCallback(errorcb);
-#ifndef _WIN32 // don't require this on win32, and works with more cards
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-#endif
-  glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, 1);
-
-#ifdef DEMO_MSAA
-  glfwWindowHint(GLFW_SAMPLES, 4);
-#endif
-  window = glfwCreateWindow(1000, 600, "NanoVG", NULL, NULL);
-//  window = glfwCreateWindow(1000, 600, "NanoVG", glfwGetPrimaryMonitor(), NULL);
-  if (!window) {
-    glfwTerminate();
-    return -1;
-  }
-
-  /* glfwSetKeyCallback(window, key); */
-
-  glfwMakeContextCurrent(window);
 #ifdef NANOVG_GLEW
   glewExperimental = GL_TRUE;
   if(glewInit() != GLEW_OK) {
@@ -161,42 +142,66 @@ int main()
   if (loadDemoData(vg, &data) == -1)
     return -1;
 
-  glfwSwapInterval(0);
-
   initGPUTimer(&gpuTimer);
 
-  glfwSetTime(0);
-  prevt = glfwGetTime();
+  prevt = SDL_GetTicks();
 
-  while (!glfwWindowShouldClose(window))
+  while (quit == 0)
   {
-    double mx, my, t, dt;
+    double mx, my;
+    u32 t, dt;
     int m1;
     int winWidth, winHeight;
-    int fbWidth, fbHeight;
-    float pxRatio;
+    /* int fbWidth, fbHeight; */
+    /* float pxRatio; */
     float gpuTimes[3];
     int i, n;
 
-    t = glfwGetTime();
+    t = SDL_GetTicks();
     dt = t - prevt;
     prevt = t;
 
+    SDL_Event e;
+    while ( SDL_PollEvent( &e ) )
+    {
+      switch( e.type )
+        {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+          break;
+        case SDL_MOUSEBUTTONDOWN:
+          m1 = 1;
+          break;
+        case SDL_MOUSEBUTTONUP:
+          m1 = 0;
+          break;
+        case SDL_MOUSEMOTION:
+          mx = e.motion.x;
+          my = e.motion.y;
+          break;
+        case SDL_MOUSEWHEEL:
+          break;
+        case SDL_QUIT:
+          quit = 1;
+          break;
+        }
+    }
+
     startGPUTimer(&gpuTimer);
 
-    glfwGetCursorPos(window, &mx, &my);
-    m1 = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_1);
-    glfwGetWindowSize(window, &winWidth, &winHeight);
-    glfwGetFramebufferSize(window, &fbWidth, &fbHeight);
+    SDL_GetWindowSize(window, &winWidth, &winHeight);
+    /* glfwGetFramebufferSize(window, &fbWidth, &fbHeight); */
+    /* pxRatio = (float)fbWidth / (float)winWidth; */
     // Calculate pixel ration for hi-dpi devices.
-    pxRatio = (float)fbWidth / (float)winWidth;
 
     // Update and render
-    glViewport(0, 0, fbWidth, fbHeight);
+    /* glViewport(0, 0, fbWidth, fbHeight); */
+    glViewport(0, 0, winWidth, winHeight);
     glClearColor(0.3f, 0.3f, 0.32f, 1.0f);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT|GL_STENCIL_BUFFER_BIT);
 
-    nvgBeginFrame(vg, winWidth, winHeight, pxRatio);
+    // TODO: retina
+    nvgBeginFrame(vg, winWidth, winHeight, 1.0 /* pxRatio */);
 
     vpl_ide_interact(&ide, m1, mx, my);
     vpl_ide_draw(&ide, mx, my);
@@ -210,7 +215,7 @@ int main()
 
     // Measure the CPU time taken excluding swap buffers (as the swap may wait
     // for GPU)
-    cpuTime = glfwGetTime() - t;
+    cpuTime = SDL_GetTicks() - t;
 
     updateGraph(&fps, dt);
     updateGraph(&cpuGraph, cpuTime);
@@ -220,8 +225,7 @@ int main()
     for (i = 0; i < n; i++)
       updateGraph(&gpuGraph, gpuTimes[i]);
 
-    glfwSwapBuffers(window);
-    glfwPollEvents();
+    SDL_GL_SwapWindow( window );
   }
 
   vpl_ide_destroy(&ide);
@@ -233,6 +237,95 @@ int main()
   printf("          CPU Time: %.2f ms\n", getGraphAverage(&cpuGraph) * 1000.0f);
   printf("          GPU Time: %.2f ms\n", getGraphAverage(&gpuGraph) * 1000.0f);
 
-  glfwTerminate();
+  SDL_Quit();
   return 0;
+}
+
+int sdl_init( SDL_Window **w )
+{
+  if ( SDL_Init( SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_GAMECONTROLLER | SDL_INIT_EVENTS ) == 0 )
+  {
+
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MAJOR_VERSION, 3 );
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_MINOR_VERSION, 3 );
+
+    SDL_GL_SetAttribute( SDL_GL_CONTEXT_PROFILE_MASK,
+                         SDL_GL_CONTEXT_PROFILE_CORE );
+
+    SDL_GL_SetAttribute( SDL_GL_STENCIL_SIZE, 8 );
+
+    *w = SDL_CreateWindow( "VPL", SDL_WINDOWPOS_UNDEFINED,
+                                  SDL_WINDOWPOS_UNDEFINED,
+                                  1024, 768, SDL_WINDOW_OPENGL );
+    if ( *w )
+    {
+      SDL_GL_CreateContext( *w );
+
+      // Activate glew
+      glewExperimental = GL_TRUE;
+      GLenum err = glewInit();
+      if ( err == GLEW_OK )
+      {
+        glEnable(GL_STENCIL_TEST);
+
+        return 0;
+      }
+      else
+      {
+        // Send GLEW error as an SDL Error
+        // SDL's error should be clear, since any previous error would stop further initialization
+        SDL_SetError( "GLEW Reported an Error: %s", glewGetErrorString(err) );
+      }
+    }
+  }
+  if ( *w ) SDL_DestroyWindow( *w );
+  *w = NULL;
+  return 1;
+}
+
+int loadDemoData(NVGcontext* vg, DemoData* data)
+{
+	int i;
+
+	if (vg == NULL)
+		return -1;
+
+	for (i = 0; i < 12; i++) {
+		char file[128];
+		snprintf(file, 128, "../example/images/image%d.jpg", i+1);
+		data->images[i] = nvgCreateImage(vg, file, 0);
+		if (data->images[i] == 0) {
+			printf("Could not load %s.\n", file);
+			return -1;
+		}
+	}
+
+	data->fontIcons = nvgCreateFont(vg, "icons", "../example/entypo.ttf");
+	if (data->fontIcons == -1) {
+		printf("Could not add font icons.\n");
+		return -1;
+	}
+	data->fontNormal = nvgCreateFont(vg, "sans", "../example/Roboto-Regular.ttf");
+	if (data->fontNormal == -1) {
+		printf("Could not add font italic.\n");
+		return -1;
+	}
+	data->fontBold = nvgCreateFont(vg, "sans-bold", "../example/Roboto-Bold.ttf");
+	if (data->fontBold == -1) {
+		printf("Could not add font bold.\n");
+		return -1;
+	}
+
+	return 0;
+}
+
+void freeDemoData(NVGcontext* vg, DemoData* data)
+{
+	int i;
+
+	if (vg == NULL)
+		return;
+
+	for (i = 0; i < 12; i++)
+		nvgDeleteImage(vg, data->images[i]);
 }

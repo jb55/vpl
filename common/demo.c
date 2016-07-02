@@ -802,53 +802,6 @@ void drawLines(NVGcontext* vg, float x, float y, float w, float h, float t)
 	nvgRestore(vg);
 }
 
-int loadDemoData(NVGcontext* vg, DemoData* data)
-{
-	int i;
-
-	if (vg == NULL)
-		return -1;
-
-	for (i = 0; i < 12; i++) {
-		char file[128];
-		snprintf(file, 128, "../example/images/image%d.jpg", i+1);
-		data->images[i] = nvgCreateImage(vg, file, 0);
-		if (data->images[i] == 0) {
-			printf("Could not load %s.\n", file);
-			return -1;
-		}
-	}
-
-	data->fontIcons = nvgCreateFont(vg, "icons", "../example/entypo.ttf");
-	if (data->fontIcons == -1) {
-		printf("Could not add font icons.\n");
-		return -1;
-	}
-	data->fontNormal = nvgCreateFont(vg, "sans", "../example/Roboto-Regular.ttf");
-	if (data->fontNormal == -1) {
-		printf("Could not add font italic.\n");
-		return -1;
-	}
-	data->fontBold = nvgCreateFont(vg, "sans-bold", "../example/Roboto-Bold.ttf");
-	if (data->fontBold == -1) {
-		printf("Could not add font bold.\n");
-		return -1;
-	}
-
-	return 0;
-}
-
-void freeDemoData(NVGcontext* vg, DemoData* data)
-{
-	int i;
-
-	if (vg == NULL)
-		return;
-
-	for (i = 0; i < 12; i++)
-		nvgDeleteImage(vg, data->images[i]);
-}
-
 void drawParagraph(NVGcontext* vg, float x, float y, float width, float height, float mx, float my)
 {
 	NVGtextRow rows[3];

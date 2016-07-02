@@ -1,9 +1,9 @@
-{ stdenv, nanovg, glfw3, premake4, mesa_glu, glew, pkgconfig, stb, luajit, terra,
+{ stdenv, nanovg, SDL2, premake4, mesa_glu, glew, pkgconfig, stb, luajit, terra,
   haskellPackages
 }:
 
 let haskellEnv = haskellPackages.ghcWithPackages (pkgs: with pkgs; [
-                   llvm-general
+                   llvm-general safe QuickCheck
                  ]);
 in stdenv.mkDerivation rec {
   name = "vpl";
@@ -13,7 +13,7 @@ in stdenv.mkDerivation rec {
 
   makeFlags = "PREFIX=$(out)";
 
-  buildInputs = [ nanovg glfw3 premake4 mesa_glu glew pkgconfig stb luajit haskellEnv terra ];
+  buildInputs = [ nanovg SDL2 premake4 mesa_glu glew pkgconfig stb luajit haskellEnv terra ];
 
   meta = with stdenv.lib; {
     description = "Visual Programming Language";
